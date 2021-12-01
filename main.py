@@ -62,12 +62,13 @@ def welcome_message():
     print('Welcome to the script that compiles the information from the Cisco device on your site!')
     print('Would you like to see all log information during work of the script ? {Y/N} N (default)')
     verbose = input('>: ')
-    if verbose is 'Y' or verbose is 'Yes' or verbose is 'y' or verbose is 'yes':
+    if verbose == 'Y' or verbose == 'Yes' or verbose == 'y' or verbose == 'yes':
         print('Verbose flag set to True', '\n')
         return (True, True)
     else:
         print('Verbose flag set to False', '\n')
         return (True, False)
+
 
 def request_ip_address_list(verbose_flag):
     """
@@ -84,13 +85,13 @@ def request_ip_address_list(verbose_flag):
 
     # Normalize element of unvalidated_ip_list
     unvalidated_ip_list = unvalidated_ip_list.split(',')
-    i=0
+    i = 0
     while i < len(unvalidated_ip_list):
-        if unvalidated_ip_list[i] is ' ':
+        if unvalidated_ip_list[i] == ' ':
             unvalidated_ip_list.remove(unvalidated_ip_list[i])
         else:
             unvalidated_ip_list[i] = str(unvalidated_ip_list[i]).strip()
-        i +=1
+        i += 1
 
     # We need be sure then list contain ip address only, without letters
     ip_list = []
@@ -103,7 +104,7 @@ def request_ip_address_list(verbose_flag):
         else:
             ip_list.append(unvalidated_ip_list[i])
 
-    if len(ip_list) is 0:
+    if len(ip_list) == 0:
         return (False, ip_list)
 
     del(unvalidated_ip_list)
@@ -131,12 +132,10 @@ def request_ip_address_list(verbose_flag):
                 ip_list_temp = []
                 while ip_adr <= ip_final:
                     ip_list_temp.append(str(ip_adr))
-                    ip_adr +=1
+                    ip_adr += 1
 
                 ip_list.pop(index_ip)
-                ip_list.extend (ip_list_temp)
-
-
+                ip_list.extend(ip_list_temp)
 
     # Checking IP addresses for membership of group Private IPv4,
     # based on https://www.iana.org/assignments/iana-ipv4-special-registry/iana-ipv4-special-registry.xhtml
@@ -145,7 +144,7 @@ def request_ip_address_list(verbose_flag):
             ip = ipaddress.ip_address(ip)
             if ip.is_private is False:
                 if verbose_flag:
-                    print('\n','Ip address {}, which you entered is not private IPv4 address. This address will be removed from list'.format(ip))
+                    print('\n', 'Ip address {}, which you entered is not private IPv4 address. This address will be removed from list'.format(ip))
                 ip_list.remove(str(ip))
         except ValueError:
             if verbose_flag:
@@ -154,11 +153,10 @@ def request_ip_address_list(verbose_flag):
             ip_list.remove(str(ip))
 
     # We need be sure to have one or more valid IP in the list
-    if len(ip_list) is 0:
+    if len(ip_list) == 0:
         return (False, ip_list)
     else:
         return (True, ip_list)
-
 
 
 def check_ip_availability(list_ip_for_checking, verbose_flag, limit=3):
@@ -200,10 +198,9 @@ def check_ip_availability(list_ip_for_checking, verbose_flag, limit=3):
                                    stderr=subprocess.PIPE)
         else:
             raise ValueError('\n', 'Something went wrong!',
-				'Your platform system is "{}"'.format(platform.system()),
-				 'I don\'t have this operating system for test my script')
+                             'Your platform system is "{}"'.format(platform.system()),
+                             'I don\'t have this operating system for test my script')
             return(False, list_ip_for_checking)
-
 
         if reply.returncode != 0:
             return item
@@ -218,10 +215,9 @@ def check_ip_availability(list_ip_for_checking, verbose_flag, limit=3):
         print('\n', 'List of available IP address')
         pprint([item for item in list_ip_for_checking])
 
-
     # We need be sure to have one or more available IP in the list
     if len(list_ip_for_checking) > 0:
-        return(True,list_ip_for_checking)
+        return(True, list_ip_for_checking)
     else:
         return(False, list_ip_for_checking)
 
@@ -234,7 +230,7 @@ def request_credentials(list_ipaddr_dev):
     """
 
     # Ask user to enter Username and Password for devices
-    print('\n','Be careful! Username and Password must be same to all devices to correct work of script.')
+    print('\n', 'Be careful! Username and Password must be same to all devices to correct work of script.')
     print('\n', 'Enter Username for connection to devices')
     usernamse = input('Username: ')
     print('\n', 'Enter Password for connection to devices (password is not displayed when you enter)')
@@ -258,7 +254,6 @@ def send_command_and_get_output(list_dic_devices, command, verbose_flag, limit=3
     :param limit: Count of parallel threads
     :return:
     """
-
 
     def send_commands(dic_command, dic_device):
         """
@@ -311,7 +306,6 @@ def send_command_and_get_output(list_dic_devices, command, verbose_flag, limit=3
                                 ' Username or password for device {} are incorrect, or SSH is down on the device'.format(dic_device['ip']))
                 return({'ip': dic_device['ip'], 'output': None, 'device_type': None})
 
-
             # To avoid "%AAA-I-DISCONNECT: User CLI session for user <username> over ssh , source <ip>
             #  destination <ip> TERMINATED. The Telnet/SSH session may still be connected."
             # We need to waiting
@@ -335,7 +329,7 @@ def send_command_and_get_output(list_dic_devices, command, verbose_flag, limit=3
 
                 # Determine the host name for 'cisco_ios' and 'cisco_s300' devices
                 find_hostname = 'WLC'
-                if dic_device['device_type'] is 'cisco_ios' or dic_device['device_type'] is 'cisco_s300':
+                if dic_device['device_type'] == 'cisco_ios' or dic_device['device_type'] == 'cisco_s300':
                     find_hostname = ssh.find_prompt()
                     if '>' in find_hostname:
                         find_hostname = find_hostname.replace('>', '')
@@ -353,7 +347,6 @@ def send_command_and_get_output(list_dic_devices, command, verbose_flag, limit=3
                             ' Username or password for device {} are incorrect, or SSH is down on the device.'.format(dic_device['ip']))
                 print('Or, you are trying to connect to an unsupported device and the SSH session cannot work correctly')
             return ({'ip': dic_device['ip'], 'output': None, 'device_type': dic_device['device_type']})
-
 
     def send_commands_threads(command_for_device, list_dic_devices, limit=limit):
         """
@@ -375,7 +368,6 @@ def send_command_and_get_output(list_dic_devices, command, verbose_flag, limit=3
 
         return list_results_all_connections
 
-
     command_to_send = command
 
     # We run connection in parallel threads
@@ -393,7 +385,6 @@ def send_command_and_get_output(list_dic_devices, command, verbose_flag, limit=3
     else:
         # If we have at least one valid output
         return(True, result)
-
 
 
 def parse_output_textfsm(list_of_command_output, dic_index, verbose_flag):
@@ -428,8 +419,8 @@ def parse_output_textfsm(list_of_command_output, dic_index, verbose_flag):
 
         list_outpud_commands = list(device['output'].keys())
 
-        for output_cmd in  list_outpud_commands:
-            dic_parsed_otpud_current_cmd ={}
+        for output_cmd in list_outpud_commands:
+            dic_parsed_otpud_current_cmd = {}
 
             template = dic_index[device_type][output_cmd]
             line_outpud = device['output'][output_cmd]
@@ -472,16 +463,16 @@ def parse_output_textfsm(list_of_command_output, dic_index, verbose_flag):
 
         # I choose and save only those parameters of device with I need at the time.
         # For different devices list of parameters are different
-        if device['device_type'] is 'cisco_ios':
+        if device['device_type'] == 'cisco_ios':
             list_parsed_output_all_devices.append({'ip': device['ip'],
-                                                  'device_type': device['device_type'],
-                                                  'hostname': device['hostname'],
-                                                  'pid': dic_parsed_otpud_current_device['show inventory']['PID'],
-                                                  'sn': dic_parsed_otpud_current_device['show inventory']['SN'],
-                                                  'os': dic_parsed_otpud_current_device['show version']['VERSION'],
-                                                  'uptime': dic_parsed_otpud_current_device['show version']['UPTIME']})
+                                                   'device_type': device['device_type'],
+                                                   'hostname': device['hostname'],
+                                                   'pid': dic_parsed_otpud_current_device['show inventory']['PID'],
+                                                   'sn': dic_parsed_otpud_current_device['show inventory']['SN'],
+                                                   'os': dic_parsed_otpud_current_device['show version']['VERSION'],
+                                                   'uptime': dic_parsed_otpud_current_device['show version']['UPTIME']})
 
-        elif device['device_type'] is 'cisco_wlc':
+        elif device['device_type'] == 'cisco_wlc':
             list_parsed_output_all_devices.append({'ip': device['ip'],
                                                    'device_type': device['device_type'],
                                                    'hostname': dic_parsed_otpud_current_device['show sysinfo']['SYSTEM_NAME'],
@@ -490,7 +481,7 @@ def parse_output_textfsm(list_of_command_output, dic_index, verbose_flag):
                                                    'os': dic_parsed_otpud_current_device['show sysinfo']['PRODUCT_VERSION'],
                                                    'uptime': dic_parsed_otpud_current_device['show sysinfo']['SYSTEM_UP_TIME']})
 
-        elif device['device_type'] is 'cisco_s300':
+        elif device['device_type'] == 'cisco_s300':
             list_parsed_output_all_devices.append({'ip': device['ip'],
                                                    'device_type': device['device_type'],
                                                    'hostname': device['hostname'],
@@ -502,7 +493,6 @@ def parse_output_textfsm(list_of_command_output, dic_index, verbose_flag):
         else:
             print('\n', 'Something went wrong. Device type in parsed output wrong.')
             return (False, list_parsed_output_all_devices)
-
 
     print('\n', 'The raw parsed output was saved to file "raw_parsed_output.txt" in script\'s directory. Just in case.')
     return (True, list_parsed_output_all_devices)
@@ -554,14 +544,10 @@ def write_to_excel(list_parsed_devices_output, verbose_flag):
                     'Close the file, check file system permission and try again.')
         return(False)
 
-
     return(True)
 
 
-
-
 ### Body
-
 if __name__ == '__main__':
 
     # Flag of the correct execution of each step of the script
@@ -603,9 +589,9 @@ if __name__ == '__main__':
     if all_doing_well:
         # The commands are little different for different devices types
         dic_command = {'cisco_ios': ['show inventory', 'show version', 'show cdp neighbors'],
-                        'cisco_wlc': ['show inventory', 'show sysinfo', 'show cdp neighbors detail'],
-                        'cisco_s300': ['show inventory', 'show version', 'show cdp neighbors'],
-                        }
+                       'cisco_wlc': ['show inventory', 'show sysinfo', 'show cdp neighbors detail'],
+                       'cisco_s300': ['show inventory', 'show version', 'show cdp neighbors'],
+                       }
         all_doing_well, list_command_output = send_command_and_get_output(list_of_dic_devices, dic_command, verbose_flag, limit=3)
 
     else:
@@ -645,7 +631,6 @@ if __name__ == '__main__':
         time.sleep(sleep_time)
         exit()
 
-
     if all_doing_well:
         print('\n')
         print('\n')
@@ -657,4 +642,4 @@ if __name__ == '__main__':
         print('\n', 'Have a nice day! Bye!')
     else:
         print('\n', 'Something went wrong. The data was not saved to the Excel file, '
-                    'but you can use the file "raw_parsed_output.txt" in script\'s directory.' )
+                    'but you can use the file "raw_parsed_output.txt" in script\'s directory.')
